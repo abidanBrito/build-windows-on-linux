@@ -1,0 +1,41 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}"
+    },
+    {
+      "name": "mingw-clang",
+      "displayName": "Host clang + mingw-w64",
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/mingw-clang.cmake"
+    },
+    {
+      "name": "mingw-gcc",
+      "displayName": "GCC cross-compiler",
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/mingw-gcc.cmake"
+    },
+    {
+      "name": "llvm-mingw",
+      "displayName": "llvm-mingw, UCRT build",
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/llvm-mingw.cmake"
+    },
+    {
+      "name": "xwin-clang-cl",
+      "displayName": "clang-cl + Microsoft SDK/CRT via xwin",
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/xwin-clang-cl.cmake"
+    }
+  ],
+  "buildPresets": [
+    { "name": "mingw-clang", "configurePreset": "mingw-clang" },
+    { "name": "mingw-gcc", "configurePreset": "mingw-gcc" },
+    { "name": "llvm-mingw", "configurePreset": "llvm-mingw" },
+    { "name": "xwin-clang-cl", "configurePreset": "xwin-clang-cl" }
+  ]
+}
