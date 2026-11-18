@@ -1,5 +1,8 @@
 # build-windows-on-linux
 
+[![Build](https://github.com/abidanBrito/build-windows-on-linux/actions/workflows/build.yml/badge.svg)](https://github.com/abidanBrito/build-windows-on-linux/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/abidanBrito/build-windows-on-linux/blob/main/LICENSE)
+
 Cross-compiling a C++ Win32 GUI application from Linux, using four different toolchains. Every build is tested under [Wine](https://www.winehq.org/).
 
 ## Toolchains
