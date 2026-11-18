@@ -1,2 +1,5 @@
 # Build artifacts
 build/
+
+# Editor-local settings
+.dir-locals.el
