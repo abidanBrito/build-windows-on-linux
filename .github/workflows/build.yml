@@ -1,4 +1,4 @@
-name: build
+name: Build
 
 on:
   push:
@@ -79,5 +79,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: window-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/window.exe
+          name: ${{ matrix.preset }}
+          path: |
+            build/${{ matrix.preset }}/hello.exe
+            build/${{ matrix.preset }}/window.exe
