@@ -1,0 +1,75 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+env:
+  LLVM_MINGW_VERSION: "20260616"
+  XWIN_VERSION: "0.10.0"
+
+jobs:
+  build:
+    name: ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - preset: mingw-clang
+            packages: clang g++-mingw-w64-x86-64
+
+          - preset: mingw-gcc
+            packages: g++-mingw-w64-x86-64
+
+          - preset: llvm-mingw
+            packages: xz-utils
+
+          - preset: xwin-clang-cl
+            packages: clang lld llvm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build ${{ matrix.packages }}
+
+      - name: Make /opt writable
+        run: |
+          sudo mkdir -p /opt/llvm-mingw /opt/xwin
+          sudo chown "$USER" /opt/llvm-mingw /opt/xwin
+
+      - name: Install llvm-mingw
+        if: matrix.preset == 'llvm-mingw'
+        run: |
+          name=llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64
+          curl -fsSL https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/${name}.tar.xz | tar -xJ -C /tmp
+          mv /tmp/${name} /opt/llvm-mingw/llvm-mingw-ucrt
+
+      - name: Cache xwin
+        if: matrix.preset == 'xwin-clang-cl'
+        id: xwin-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/xwin
+          key: xwin-${{ env.XWIN_VERSION }}
+
+      - name: Install xwin & download the Microsoft SDK/CRT
+        if: matrix.preset == 'xwin-clang-cl' && steps.xwin-cache.outputs.cache-hit != 'true'
+        run: |
+          name=xwin-${XWIN_VERSION}-x86_64-unknown-linux-musl
+          curl -fsSL https://github.com/Jake-Shadle/xwin/releases/download/${XWIN_VERSION}/${name}.tar.gz | tar -xz -C /tmp
+          /tmp/${name}/xwin --accept-license splat --output /opt/xwin
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: window-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/window.exe
