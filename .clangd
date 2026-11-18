@@ -1,0 +1,3 @@
+# Swap for mingw-clang, mingw-gcc or xwin-clang-cl as needed
+CompileFlags:
+  CompilationDatabase: build/llvm-mingw
