@@ -11,6 +11,7 @@ concurrency:
 env:
   LLVM_MINGW_VERSION: "20260616"
   XWIN_VERSION: "0.10.0"
+  LLVM_VERSION: "23"
 
 jobs:
   build:
@@ -21,16 +22,16 @@ jobs:
       matrix:
         include:
           - preset: mingw-clang
-            packages: clang g++-mingw-w64-x86-64
+            llvm: true
+            mingw-gcc: true
 
           - preset: mingw-gcc
-            packages: g++-mingw-w64-x86-64
+            mingw-gcc: true
 
           - preset: llvm-mingw
-            packages: xz-utils
 
           - preset: xwin-clang-cl
-            packages: clang lld llvm
+            llvm: true
 
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +39,23 @@ jobs:
       - name: Install packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build ${{ matrix.packages }}
+          sudo apt-get install -y cmake ninja-build
 
-      - name: Add LLVM tools to PATH
-        if: matrix.preset == 'xwin-clang-cl'
-        run: dirname "$(readlink -f "$(command -v clang)")" >> "$GITHUB_PATH"
+      - name: Install LLVM
+        if: matrix.llvm
+        run: |
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-${LLVM_VERSION} lld-${LLVM_VERSION} llvm-${LLVM_VERSION}
+          echo /usr/lib/llvm-${LLVM_VERSION}/bin >> "$GITHUB_PATH"
+
+      - name: Install MinGW GCC
+        if: matrix.mingw-gcc
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew install mingw-w64
+          echo "$(brew --prefix mingw-w64)/toolchain-x86_64/bin" >> "$GITHUB_PATH"
 
       - name: Make /opt writable
         run: |
