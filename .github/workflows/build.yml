@@ -36,6 +36,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build ${{ matrix.packages }}
 
+      - name: Add LLVM tools to PATH
+        if: matrix.preset == 'xwin-clang-cl'
+        run: dirname "$(readlink -f "$(command -v clang)")" >> "$GITHUB_PATH"
+
       - name: Make /opt writable
         run: |
           sudo mkdir -p /opt/llvm-mingw /opt/xwin
